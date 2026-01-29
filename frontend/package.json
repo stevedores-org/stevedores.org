@@ -1,0 +1,17 @@
+{
+  "name": "stevedores-platform",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/server.ts",
+    "build": "bun build src/server.ts --outdir dist --target bun",
+    "build:wasm": "cd ../crate-ai-engine && wasm-pack build --target bundler --out-dir ../frontend/src/wasm"
+  },
+  "dependencies": {
+    "hono": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  }
+}
