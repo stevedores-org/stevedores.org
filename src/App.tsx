@@ -5,7 +5,7 @@ export default function App() {
       <header className="border-b border-zinc-800">
         <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/logo.jpg" alt="Stevedores" className="h-10 w-10 rounded-full" />
+            <span className="text-2xl">🚢</span>
             <span className="font-bold text-xl">stevedores</span>
           </div>
           <div className="flex items-center gap-6">
