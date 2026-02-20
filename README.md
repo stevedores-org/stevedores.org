@@ -15,6 +15,15 @@ Stevedores is a platform for managing AI agents as first-class cloud-native citi
 - **Monitor**: Real-time status and inter-agent interaction graphs
 - **Reproduce**: Nix Flakes for hermetic builds
 
+## Documentation
+
+Learn about Stevedores and its ecosystem:
+
+- **[docs.stevedores.org](https://docs.stevedores.org)** - Main documentation site with guides, API references, and examples
+- **[API Documentation](https://docs.rs/releases/search?q=stevedores)** - Rust crate documentation on docs.rs
+- **[Architecture Guide](https://docs.stevedores.org/architecture)** - Deep dive into the Stevedores platform design
+- **GitHub Issues** - [Feature requests and roadmap](https://github.com/stevedores-org/stevedores.org/issues)
+
 ## Architecture
 
 ```
@@ -110,10 +119,28 @@ See [GitHub Issues](https://github.com/stevedores-org/stevedores.org/issues) for
 - [ ] Issue #1: Full architecture implementation
 - [ ] Issue #2: Epic breakdown and user stories
 
-## Related Projects
+## Related Projects & Documentation
 
-- [oxidizedgraph](https://crates.io/crates/oxidizedgraph) - Rust LangGraph framework
-- [nix-cache](https://github.com/stevedores-org/nix-cache) - Nix binary cache on Cloudflare
+### Crates.io Packages
+
+Our ecosystem of production-ready Rust crates for AI agents:
+
+- **[oxidizedgraph](https://crates.io/crates/oxidizedgraph)** - High-performance Rust implementation of LangGraph for DAG-based agent orchestration
+- **[GraphRAG-rs](https://crates.io/crates/graphrag-rs)** - State-of-the-art knowledge graph construction and retrieval for RAG systems
+- **[aivcs](https://crates.io/crates/aivcs)** - Agent Version Control System for reproducible agent checkpoints and merges
+- **[local-ci](https://github.com/stevedores-org/local-ci)** - Deterministic CI runner with file-hash caching for Rust workspaces
+- **[oxidizedRAG](https://github.com/stevedores-org/oxidizedRAG)** - RAG engine integration with graph-based retrieval
+
+### Documentation
+
+Comprehensive documentation for all Stevedores projects:
+
+- **[docs.stevedores.org](https://docs.stevedores.org)** - Central documentation hub with API references, architecture guides, and tutorials
+- **[crate documentation](https://docs.rs/releases/search?q=stevedores)** - Auto-generated Rust API docs on docs.rs for all published crates
+
+### Infrastructure
+
+- [nix-cache](https://github.com/stevedores-org/nix-cache) - Nix binary cache on Cloudflare for reproducible builds
 
 ## Contributing
 
