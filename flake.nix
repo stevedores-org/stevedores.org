@@ -6,6 +6,7 @@
     extra-trusted-substituters = [ "https://nix-cache.stevedores.org/" ];
     extra-trusted-public-keys = [
       "stevedores-1:ZEtb+wHYNR/LDmMDhF3/EpRZDNma8exY2b1TGZ6uS2A="
+      "stevedores-cache-1:bXLxkipycRWproIJnk8pPWNFdgVfeV+I2mJXCoW4/ag="
     ];
   };
 
@@ -39,7 +40,6 @@
             nodejs_22
 
             # Tools
-            attic-client
             cargo-watch
             just
 
@@ -55,10 +55,6 @@
             echo "  cd frontend && bun install && bun run dev  # Start web server"
             echo "  cd crate-ai-engine && cargo test           # Test Rust code"
             echo "  cd crate-ai-engine && wasm-pack build      # Build WASM"
-            echo ""
-            echo "Nix Cache (Attic):"
-            echo "  attic login stevedores https://nix-cache.stevedores.org \$ATTIC_TOKEN"
-            echo "  attic push stevedores <store-path>         # Push to cache"
             echo ""
           '';
 
