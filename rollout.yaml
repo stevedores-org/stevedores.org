@@ -1,0 +1,22 @@
+version: 1
+
+app: stevedores-platform
+target: static
+
+preflight:
+  build: bun run build
+  typecheck: tsc -b
+  artifact: dist
+  minArtifactFiles: 5
+
+health:
+  url: http://localhost:8080/health
+  expectedStatus: 200
+  retries: 5
+  retryDelayMs: 2000
+
+static:
+  root: ./.rollout/www
+  nginxReload: false
+
+stateDir: .rollout
