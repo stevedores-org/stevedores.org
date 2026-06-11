@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  nix-checks:
+    name: Nix Flake Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            substituters = https://cache.nixos.org https://nix-cache.stevedores.org/
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWm8RxRGoJv0J/G/0tBwPqL0mx4z0= nix-cache.stevedores.org-1:RRNEdgfKNkk6rcYwFckocgOmv3aj9S3WjE8Dtu49ukI=
+
+      - name: Nix flake check
+        run: nix flake check --print-build-logs
+
+      - name: Push to cache
+        if: github.event_name == 'push'
+        uses: stevedores-org/nix-cache/.github/actions/push@develop
+        with:
+          paths: .#wasm
