@@ -3,10 +3,10 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    location /health {
+    location = /health {
         access_log off;
-        add_header Content-Type text/plain;
-        return 200 'OK';
+        default_type text/plain;
+        try_files /health =404;
     }
 
     location / {
