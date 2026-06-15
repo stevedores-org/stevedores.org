@@ -37,7 +37,6 @@
 
             # Bun/TypeScript
             bun
-            nodejs_22
 
             # Tools
             cargo-watch
