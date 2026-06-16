@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Project, Commit } from '../types';
-import { INITIAL_PROJECTS } from '../data';
+import type { Project, Language } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, GitFork, Star, GitPullRequest, Play } from 'lucide-react';
 
@@ -12,129 +11,21 @@ function GithubIcon({ className }: { className?: string }) {
   );
 }
 
+// ─── Live GitHub data ────────────────────────────────────────────────────────
+// All repository stats on this page come straight from the GitHub REST API for
+// the stevedores-org org. No invented stars/forks/benchmarks (see issue #19).
 
-const METADATA_DICT: Record<string, {
-  longDescription: string;
-  version: string;
-  perfMetrics: { label: string; value: string | number; unit: string; subtext: string }[];
-  recentCommits: Commit[];
-}> = {
-  oxidizedgraph: {
-    longDescription: 'The core runtime engine block. oxidizedgraph is a highly optimized Rust engine built for defining and running complex, state-checkpointed AI agent workflows with parallel execution pipelines, low-resource supervisors, and compile-time correctness.',
-    version: 'v0.5.2',
-    perfMetrics: [
-      { label: 'Startup Time', value: 3.2, unit: 'ms', subtext: '99th percentile cold start' },
-      { label: 'Memory Overhead', value: 0.8, unit: 'MB', subtext: 'Idle memory footprint' },
-      { label: 'Step Latency', value: 12, unit: 'μs', subtext: 'Single edge execution' }
-    ],
-    recentCommits: [
-      {
-        id: 'c1',
-        author: { name: 'claude', username: 'claude', avatar: 'https://avatars.githubusercontent.com/u/81847?v=4' },
-        message: 'feat: optimize async epoll context switches for Linux kernel v6.2+',
-        timestamp: '2 hours ago',
-        hash: '7a04f2e'
-      },
-      {
-        id: 'c2',
-        author: { name: 'stevei101', username: 'stevei101', avatar: 'https://avatars.githubusercontent.com/u/287896?v=4' },
-        message: 'fix: align multi-core task scheduling with CPU cache residency limits',
-        timestamp: '1 day ago',
-        hash: 'b5e1903'
-      }
-    ]
-  },
-  aivcs: {
-    longDescription: 'Ensures absolute reproducibility. aivcs acts as a version-controlled database and snapshot framework that captures agent execution graphs, memory histories, and tools versions. Reverts agent states atomically when error states are reached.',
-    version: 'v0.2.1',
-    perfMetrics: [
-      { label: 'Snapshot Speed', value: 1.4, unit: 'ms', subtext: 'Serialization & write' },
-      { label: 'Compressed Size', value: 12, unit: 'KB', subtext: 'Average state payload size' },
-      { label: 'State Restore', value: 0.9, unit: 'ms', subtext: 'Time to active memory' }
-    ],
-    recentCommits: [
-      {
-        id: 'c3',
-        author: { name: 'principle-lgtm', username: 'principle-lgtm', avatar: 'https://avatars.githubusercontent.com/u/246413104?v=4' },
-        message: 'refactor: direct binary ingestion into tar archive structures without local disk buffering',
-        timestamp: '5 hours ago',
-        hash: 'd3f2c51'
-      }
-    ]
-  },
-  mom: {
-    longDescription: 'The sovereign container supervisor. mom parses declarative Nix blueprints to orchestrate bare-metal or VM microservice structures, deploying and scaling OCI containers instantly. Built with Rust to optimize resource usage under dense orchestration.',
-    version: 'v0.8.0',
-    perfMetrics: [
-      { label: 'Deploy Speed', value: 180, unit: 'ms', subtext: 'Nix-to-OCI instantiation' },
-      { label: 'Supervisor Ram', value: 2.1, unit: 'MB', subtext: 'Resident memory usage' },
-      { label: 'Max Capacity', value: '10k', unit: 'nodes', subtext: 'Tested cluster density' }
-    ],
-    recentCommits: [
-      {
-        id: 'c4',
-        author: { name: 'claude', username: 'claude', avatar: 'https://avatars.githubusercontent.com/u/81847?v=4' },
-        message: 'perf: utilize Bun.serve native arraybuffer streaming to reduce V8 garbage sweeps',
-        timestamp: '3 days ago',
-        hash: '2c9e782'
-      }
-    ]
-  },
-  'local-ci': {
-    longDescription: 'Brings pipeline checks to local development. local-ci utilizes native Bun routing and Rust task pools to run full test suites, lint, and build stages. Integrates seamlessly with dockworker.toml setups to prevent remote CI pipeline delays.',
-    version: 'v1.1.0',
-    perfMetrics: [
-      { label: 'Test Runtime', value: 120, unit: 'ms', subtext: 'Unit test suite compile and run' },
-      { label: 'Task Spawn', value: 1.8, unit: 'ms', subtext: 'Process initialization overhead' },
-      { label: 'Disk Cache Ratio', value: '92%', unit: 'hit', subtext: 'Cargo build artifact recycling' }
-    ],
-    recentCommits: [
-      {
-        id: 'c5',
-        author: { name: 'stevei101', username: 'stevei101', avatar: 'https://avatars.githubusercontent.com/u/287896?v=4' },
-        message: 'feat: add raw epoll connection tracking to map network topologies in real-time',
-        timestamp: '1 week ago',
-        hash: 'a90e312'
-      }
-    ]
-  },
-  oxidizedRAG: {
-    longDescription: 'High-speed search capability. oxidizedRAG implements custom dot-product and cosine-similarity vector queries directly in compiled assembly and Rust, optimized for modern CPUs. Hooks up to SurrealDB or raw memory blocks to feed agent contexts.',
-    version: 'v0.3.5',
-    perfMetrics: [
-      { label: 'Vector Match', value: 0.15, unit: 'ms', subtext: '1M embeddings scan latency' },
-      { label: 'Index Build', value: 4.8, unit: 's', subtext: '100k paragraphs index time' },
-      { label: 'RAM Footprint', value: 14.2, unit: 'MB', subtext: 'Idle memory footprint' }
-    ],
-    recentCommits: [
-      {
-        id: 'c6',
-        author: { name: 'principle-lgtm', username: 'principle-lgtm', avatar: 'https://avatars.githubusercontent.com/u/246413104?v=4' },
-        message: 'style: revamp layout nodes according to industrial terminal blueprints',
-        timestamp: '4 days ago',
-        hash: '12ef4b4'
-      }
-    ]
-  },
-  ogre: {
-    longDescription: 'Optimized graph storage. ogre is a specialized memory-mapped database tailored for highly connected multi-agent networks. It avoids SQL translations by processing raw pointers, ensuring microsecond edge traversal times.',
-    version: 'v0.4.1',
-    perfMetrics: [
-      { label: 'Traversal Speed', value: 8, unit: 'ns', subtext: 'Single hop memory-map access' },
-      { label: 'Node Capacity', value: '50M', unit: 'nodes', subtext: 'Maximum memory index capacity' },
-      { label: 'Disk Footprint', value: '0.4', unit: 'KB', subtext: 'Average storage per 1000 nodes' }
-    ],
-    recentCommits: [
-      {
-        id: 'c7',
-        author: { name: 'claude', username: 'claude', avatar: 'https://avatars.githubusercontent.com/u/81847?v=4' },
-        message: 'feat: add memory-mapped graph traversal indexes',
-        timestamp: '5 days ago',
-        hash: '3d9e8c1'
-      }
-    ]
-  }
-};
+const ORG = 'stevedores-org';
+const CACHE_KEY = 'stevedores:projects:v1';
+const CACHE_TTL_MS = 5 * 60 * 1000; // stay within unauthenticated rate limits
+
+// Pin our core repos to the front; everything else falls back to star order.
+const PRIORITY_ORDER = ['oxidizedgraph', 'aivcs', 'mom', 'local-ci', 'oxidizedRAG', 'ogre'];
+
+interface CacheEntry {
+  ts: number;
+  projects: Project[];
+}
 
 const getLanguageColor = (lang: string): string => {
   switch (lang.toLowerCase()) {
@@ -145,88 +36,193 @@ const getLanguageColor = (lang: string): string => {
     case 'shell': return '#89e051';
     case 'swift': return '#f05138';
     case 'assembly': return '#10b981';
+    case 'python': return '#3572A5';
+    case 'go': return '#00ADD8';
+    case 'html': return '#e34c26';
+    case 'css': return '#563d7c';
+    case 'dockerfile': return '#384d54';
     default: return '#9ca3af';
   }
 };
 
-const DEFAULT_METRICS = [
-  { label: 'Startup Time', value: '4.8', unit: 'ms', subtext: '99th percentile cold start' },
-  { label: 'Memory Overhead', value: '1.2', unit: 'MB', subtext: 'Idle memory footprint' },
-  { label: 'Network Throughput', value: '45k', unit: 'req/s', subtext: 'Single-node proxy' }
-];
+function readCache(allowStale: boolean): Project[] | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const entry = JSON.parse(raw) as CacheEntry;
+    if (!allowStale && Date.now() - entry.ts > CACHE_TTL_MS) return null;
+    return Array.isArray(entry.projects) ? entry.projects : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(projects: Project[]) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), projects } satisfies CacheEntry));
+  } catch {
+    /* sessionStorage unavailable or over quota — non-fatal */
+  }
+}
+
+function ghFetch(url: string): Promise<Response> {
+  return fetch(url, { headers: { Accept: 'application/vnd.github+json' } });
+}
+
+// Real language breakdown by bytes for one repo.
+async function fetchLanguages(languagesUrl: string): Promise<Language[]> {
+  try {
+    const res = await ghFetch(languagesUrl);
+    if (!res.ok) return [];
+    const bytes = (await res.json()) as Record<string, number>;
+    const total = Object.values(bytes).reduce((a, b) => a + b, 0);
+    if (total === 0) return [];
+    const ranked = Object.entries(bytes)
+      .map(([name, b]) => ({ name, percentage: Math.round((b / total) * 100), color: getLanguageColor(name) }))
+      .sort((a, b) => b.percentage - a.percentage);
+    // Drop the long tail of languages that round to 0% so the legend stays
+    // readable, but always keep at least the dominant language.
+    const significant = ranked.filter((l) => l.percentage >= 1);
+    return significant.length > 0 ? significant : ranked.slice(0, 1);
+  } catch {
+    return [];
+  }
+}
+
+// Real open-PR count. GitHub's `open_issues_count` lumps issues + PRs together,
+// so we fetch the open PRs to both report PRs and back out the true issue count.
+// Returns null when the call fails (e.g. rate-limited) so the caller can degrade.
+async function fetchOpenPrCount(fullName: string): Promise<number | null> {
+  try {
+    const res = await ghFetch(`https://api.github.com/repos/${fullName}/pulls?state=open&per_page=100`);
+    if (!res.ok) return null;
+    const prs = await res.json();
+    return Array.isArray(prs) ? prs.length : null;
+  } catch {
+    return null;
+  }
+}
+
+interface GithubRepo {
+  name: string;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  language: string | null;
+  languages_url: string;
+  stargazers_count: number;
+  forks_count: number;
+  open_issues_count: number;
+  archived: boolean;
+  fork: boolean;
+  private: boolean;
+}
+
+async function mapRepo(repo: GithubRepo): Promise<Project> {
+  const [languages, prCount] = await Promise.all([
+    fetchLanguages(repo.languages_url),
+    fetchOpenPrCount(repo.full_name),
+  ]);
+
+  const pullRequests = prCount ?? 0;
+  const openIssues = prCount === null
+    ? repo.open_issues_count
+    : Math.max(0, repo.open_issues_count - prCount);
+
+  const resolvedLangs: Language[] = languages.length > 0
+    ? languages
+    : repo.language
+      ? [{ name: repo.language, percentage: 100, color: getLanguageColor(repo.language) }]
+      : [];
+
+  return {
+    id: repo.name,
+    name: repo.name,
+    description: repo.description || 'No description provided.',
+    longDescription: repo.description || 'No extended summary is published for this repository yet.',
+    stars: repo.stargazers_count ?? 0,
+    forks: repo.forks_count ?? 0,
+    openIssues,
+    pullRequests,
+    languages: resolvedLangs,
+    status: repo.archived ? 'idle' : 'deployed',
+  };
+}
+
+async function loadProjects(): Promise<Project[]> {
+  const res = await ghFetch(`https://api.github.com/orgs/${ORG}/repos?type=public&sort=updated&per_page=100`);
+  if (!res.ok) {
+    throw new Error(res.status === 403 || res.status === 429 ? 'rate-limited' : `github-error-${res.status}`);
+  }
+  const repos = ((await res.json()) as GithubRepo[]).filter((r) => !r.fork && !r.private);
+  const projects = await Promise.all(repos.map(mapRepo));
+
+  projects.sort((a, b) => {
+    const ia = PRIORITY_ORDER.indexOf(a.name);
+    const ib = PRIORITY_ORDER.indexOf(b.name);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
+    return b.stars - a.stars;
+  });
+  return projects;
+}
 
 export default function ProjectList() {
-  const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [projects, setProjects] = useState<Project[]>(() => readCache(false) ?? []);
+  const [loading, setLoading] = useState<boolean>(() => readCache(false) === null);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedLang, setSelectedLang] = useState<string>('All');
   const [activeCompareId, setActiveCompareId] = useState<string | null>(null);
-  
+
   // Compiler Modal Simulation State
   const [compilingProject, setCompilingProject] = useState<Project | null>(null);
   const [compileLogs, setCompileLogs] = useState<string[]>([]);
   const [compileProgress, setCompileProgress] = useState<number>(0);
   const [compileStatus, setCompileStatus] = useState<'idle' | 'running' | 'success'>('idle');
 
-  // Load from GitHub API
+  // Load live repository data from GitHub, with a 5-minute sessionStorage cache.
   useEffect(() => {
-    fetch('https://api.github.com/orgs/stevedores-org/repos')
-      .then(res => {
-        if (!res.ok) throw new Error('API request failed');
-        return res.json();
+    const fresh = readCache(false);
+    if (fresh) {
+      setProjects(fresh);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    loadProjects()
+      .then((list) => {
+        if (cancelled) return;
+        setProjects(list);
+        writeCache(list);
+        setError(null);
       })
-      .then((data: any[]) => {
-        // Map dynamic response with our metadata mappings
-        const mapped = data.map((repo: any) => {
-          const name = repo.name;
-          const meta = METADATA_DICT[name] || {
-            longDescription: repo.description || 'No extended architecture summary available.',
-            version: 'v1.0.0',
-            perfMetrics: DEFAULT_METRICS,
-            recentCommits: []
-          };
-
-          const primaryLang = repo.language || 'Rust';
-          const languages = [
-            { name: primaryLang, percentage: 100, color: getLanguageColor(primaryLang) }
-          ];
-
-          return {
-            id: repo.name,
-            name: repo.name,
-            description: repo.description || 'No description provided.',
-            longDescription: meta.longDescription,
-            version: meta.version,
-            stars: repo.stargazers_count,
-            forks: repo.forks_count,
-            openIssues: repo.open_issues_count,
-            pullRequests: Math.max(1, Math.floor(repo.open_issues_count * 0.4)),
-            languages,
-            status: 'deployed' as const,
-            perfMetrics: meta.perfMetrics,
-            recentCommits: meta.recentCommits
-          };
-        });
-
-        // Sort to prioritize our active core repos first, then the rest
-        const order = ['oxidizedgraph', 'aivcs', 'mom', 'local-ci', 'oxidizedRAG', 'ogre'];
-        mapped.sort((a, b) => {
-          const indexA = order.indexOf(a.name);
-          const indexB = order.indexOf(b.name);
-          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-          if (indexA !== -1) return -1;
-          if (indexB !== -1) return 1;
-          return b.stars - a.stars;
-        });
-
-        setProjects(mapped);
-        setLoading(false);
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        // Degrade gracefully: prefer a stale cache over an error or fictional data.
+        const stale = readCache(true);
+        if (stale && stale.length > 0) {
+          setProjects(stale);
+          setError(null);
+          return;
+        }
+        const rateLimited = e instanceof Error && e.message === 'rate-limited';
+        setError(
+          rateLimited
+            ? 'GitHub API rate limit reached — live repository metrics will be available again shortly.'
+            : 'Could not load live repository data from GitHub right now.'
+        );
       })
-      .catch(() => {
-        // Fallback to initial static data
-        setProjects(INITIAL_PROJECTS);
-        setLoading(false);
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const triggerCompileSimulation = (p: Project) => {
@@ -234,7 +230,7 @@ export default function ProjectList() {
     setCompileStatus('running');
     setCompileProgress(0);
     setCompileLogs([
-      `[BUN CLUSTER RUNTIME LOGS] Initiating compilation pipeline for repository: ${p.name}@${p.version}...`,
+      `[BUN CLUSTER RUNTIME LOGS] Initiating compilation pipeline for repository: ${p.name}@${p.version ?? 'latest'}...`,
       `[1/4] Scanning Cargo workspaces for target binaries...`
     ]);
 
@@ -242,7 +238,7 @@ export default function ProjectList() {
       `[2/4] Parsing Rust AST blocks... optimized macro expansion complete.`,
       `[3/4] Packaging static glibc dependencies with Cargo Linker... Link-Time-Optimization activated.`,
       `[4/4] Transpiling TS routes in Bun dynamic bundler (V8 JIT compilation)...`,
-      `[METRIC OUT] Size compressed from 14.8MB down to raw microservice payload format (${p.perfMetrics[1]?.value || '1.8'} ${p.perfMetrics[1]?.unit || 'MB'})`,
+      `[LINK OUT] Static musl binary linked and stripped; container payload sealed.`,
       `🚀 Build fully packaged inside container sandbox with sub-millisecond local routing initialization!`
     ];
 
@@ -250,12 +246,12 @@ export default function ProjectList() {
     const interval = setInterval(() => {
       setCompileProgress(prev => {
         const next = Math.min(prev + 20, 100);
-        
+
         if (next < 100 && currentLogIndex < logsList.length) {
           setCompileLogs(curr => [...curr, logsList[currentLogIndex]]);
           currentLogIndex++;
         }
-        
+
         if (next === 100) {
           clearInterval(interval);
           setCompileStatus('success');
@@ -267,22 +263,22 @@ export default function ProjectList() {
   };
 
   const filteredProjects = projects.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           p.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     if (selectedLang === 'All') return matchesSearch;
     return matchesSearch && p.languages.some(l => l.name === selectedLang);
   });
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col gap-6 font-sans text-slate-800" id="projects-directory-root">
-      
+
       {/* Top Filter Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="font-sans font-bold text-lg text-slate-800">OSS Repositories & Performance Matrices</h3>
+          <h3 className="font-sans font-bold text-lg text-slate-800">OSS Repositories</h3>
           <p className="text-sm text-slate-500">
-            Compare repository characteristics and compile our high-performance modular libraries directly.
+            Live stars, forks, issues and language mix pulled straight from GitHub for the stevedores-org org.
           </p>
         </div>
 
@@ -321,17 +317,41 @@ export default function ProjectList() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-slate-400 font-mono text-xs animate-pulse">
-          ⚡ Loading live GitHub repository metrics...
+        /* Loading skeleton — placeholder cards while live data is fetched */
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4" aria-busy="true" aria-label="Loading repositories">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="border border-slate-200 bg-white rounded-2xl p-5 flex flex-col gap-4 animate-pulse" aria-hidden="true">
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex-1">
+                  <div className="h-4 w-32 bg-slate-200 rounded mb-2" />
+                  <div className="h-3 w-full bg-slate-100 rounded mb-1.5" />
+                  <div className="h-3 w-2/3 bg-slate-100 rounded" />
+                </div>
+                <div className="w-7 h-7 bg-slate-100 rounded-lg" />
+              </div>
+              <div className="h-1.5 w-full bg-slate-100 rounded-full" />
+              <div className="border-t border-slate-100 pt-3 flex items-center gap-4">
+                <div className="h-3 w-10 bg-slate-100 rounded" />
+                <div className="h-3 w-10 bg-slate-100 rounded" />
+                <div className="h-3 w-10 bg-slate-100 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : error && filteredProjects.length === 0 ? (
+        /* Graceful degradation when GitHub is unavailable / rate-limiting */
+        <div className="text-center py-12 px-6">
+          <p className="text-sm text-slate-500 font-medium">{error}</p>
+          <p className="text-xs text-slate-400 mt-1 font-mono">Source: api.github.com/orgs/stevedores-org/repos</p>
         </div>
       ) : (
         /* Grid of Repository Cards */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredProjects.map((proj) => {
             const isComparing = activeCompareId === proj.id;
-            
+
             return (
-              <div 
+              <div
                 key={proj.id}
                 className="border border-slate-200 hover:border-slate-350 bg-white hover:bg-slate-50/40 rounded-2xl p-5 flex flex-col gap-4 focus-within:ring-1 focus-within:ring-orange-500/30 transition-all shadow-xs"
                 id={`project-card-${proj.id}`}
@@ -343,9 +363,11 @@ export default function ProjectList() {
                       <span className="font-mono text-sm font-bold text-slate-800 hover:text-orange-600 transition-colors">
                         {proj.name}
                       </span>
-                      <span className="text-[10px] bg-slate-100 text-slate-500 font-mono px-2 py-0.5 rounded-full border border-slate-200">
-                        {proj.version}
-                      </span>
+                      {proj.version && (
+                        <span className="text-[10px] bg-slate-100 text-slate-500 font-mono px-2 py-0.5 rounded-full border border-slate-200">
+                          {proj.version}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-slate-500 leading-relaxed md:max-w-md">
                       {proj.description}
@@ -354,9 +376,9 @@ export default function ProjectList() {
 
                   {/* Git quick action buttons */}
                   <div className="flex items-center gap-1.5">
-                    <a 
-                      href={`https://github.com/stevedores-org/${proj.name}`} 
-                      target="_blank" 
+                    <a
+                      href={`https://github.com/stevedores-org/${proj.name}`}
+                      target="_blank"
                       rel="noreferrer"
                       className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer"
                       title="Jump to GitHub source code"
@@ -367,46 +389,30 @@ export default function ProjectList() {
                 </div>
 
                 {/* Dynamic Languages gauge bar representation */}
-                <div className="flex flex-col gap-1.5">
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full flex overflow-hidden">
-                    {proj.languages.map((lang, index) => (
-                      <div 
-                        key={index} 
-                        style={{ 
-                          width: `${lang.percentage}%`,
-                          backgroundColor: lang.color 
-                        }}
-                        title={`${lang.name}: ${lang.percentage}%`}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-3 text-[10px] font-mono text-slate-500">
-                    {proj.languages.map((lang, index) => (
-                      <span key={index} className="flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: lang.color }} />
-                        {lang.name} ({lang.percentage}%)
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Sub-Performance Benchmark metrics grids */}
-                <div className="grid grid-cols-3 gap-2 bg-slate-50/80 border border-slate-100 rounded-xl p-3">
-                  {proj.perfMetrics.map((met, index) => (
-                    <div key={index} className="flex flex-col">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 truncate">
-                        {met.label}
-                      </span>
-                      <span className="text-sm font-mono font-bold text-slate-800 flex items-baseline gap-0.5">
-                        {met.value} 
-                        <span className="text-[10px] font-normal text-slate-400 font-sans">{met.unit}</span>
-                      </span>
-                      <span className="text-[9px] text-slate-500 truncate leading-snug">
-                        {met.subtext}
-                      </span>
+                {proj.languages.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full flex overflow-hidden">
+                      {proj.languages.map((lang, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            width: `${lang.percentage}%`,
+                            backgroundColor: lang.color
+                          }}
+                          title={`${lang.name}: ${lang.percentage}%`}
+                        />
+                      ))}
                     </div>
-                  ))}
-                </div>
+                    <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono text-slate-500">
+                      {proj.languages.map((lang, index) => (
+                        <span key={index} className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: lang.color }} />
+                          {lang.name} ({lang.percentage}%)
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Buttons and expands */}
                 <div className="border-t border-slate-100 pt-3 flex items-center justify-between mt-auto">
@@ -457,27 +463,12 @@ export default function ProjectList() {
                     >
                       <div className="text-xs text-slate-600 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
                         <div className="font-semibold text-slate-800 mb-1">Architecture Summary:</div>
-                        <p className="leading-relaxed mb-3 text-slate-500 text-slate-600">{proj.longDescription}</p>
+                        <p className="leading-relaxed mb-1 text-slate-600">{proj.longDescription}</p>
 
-                        {proj.recentCommits && proj.recentCommits.length > 0 && (
-                          <>
-                            <div className="font-semibold text-slate-800 mb-2">Recent Git Commit Outlets:</div>
-                            <div className="space-y-2 border-l-2 border-orange-500/30 pl-3">
-                              {proj.recentCommits.map(c => (
-                                <div key={c.id}>
-                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-700 font-medium">
-                                    <img src={c.author.avatar} alt="avatar" className="w-4 h-4 rounded-full inline" />
-                                    <span className="font-bold">{c.author.name}</span>
-                                    <span className="text-[10px] text-slate-400 font-mono">@{c.author.username}</span>
-                                    <span className="text-[9px] text-slate-400 font-mono bg-slate-100 border border-slate-200 px-1 rounded-sm ml-auto">{c.hash}</span>
-                                  </div>
-                                  <div className="text-[10px] text-slate-550 pl-5 leading-normal mt-0.5 italic">{c.message}</div>
-                                  <div className="text-[9px] text-slate-400 pl-5">{c.timestamp}</div>
-                                </div>
-                              ))}
-                            </div>
-                          </>
-                        )}
+                        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+                          <span title="Open issues (excludes pull requests)">Open issues: <span className="text-slate-700 font-semibold">{proj.openIssues}</span></span>
+                          <span title="Open pull requests">Open PRs: <span className="text-slate-700 font-semibold">{proj.pullRequests}</span></span>
+                        </div>
                       </div>
                     </motion.div>
                   )}
@@ -505,7 +496,7 @@ export default function ProjectList() {
                   <p className="text-[11px] text-slate-400 font-mono">Target: {compilingProject.name}@vessel-packager</p>
                 </div>
                 {compileStatus === 'success' && (
-                  <button 
+                  <button
                     onClick={() => setCompilingProject(null)}
                     className="text-xs bg-orange-600 hover:bg-orange-700 text-white font-bold px-3 py-1.5 rounded-lg cursor-pointer transition-all border-none"
                   >
@@ -531,7 +522,7 @@ export default function ProjectList() {
                     <span>{compileProgress}%</span>
                   </div>
                   <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-orange-500 rounded-full transition-all duration-300"
                       style={{ width: `${compileProgress}%` }}
                     />
